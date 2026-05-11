@@ -132,7 +132,13 @@ echo "Configuration file generated: config.json"
 
 echo "Running deployment... "
 
-docker run  --network host -e TARGET=$server_ip -v ./config.json:/etc/nixos-xray/xray-config.json -v $root_auth_keys_path:/etc/nixos-xray/root_authorized_keys.txt -v $auth_keys_path:/etc/nixos-xray/authorized_keys.txt -v $priv_key_path:/root/.ssh/id_rsa:ro $image
+docker run  --network host -e TARGET=$server_ip \
+    -v ./config.json:/etc/nixos-xray/xray-config.json \
+    -v $root_auth_keys_path:/etc/nixos-xray/root_authorized_keys.txt \
+    -v $auth_keys_path:/etc/nixos-xray/authorized_keys.txt \
+    -v $priv_key_path:/root/.ssh/id_rsa:ro \
+    -v $SSH_AUTH_SOCK:/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
+    $image
 
 for ((i=0; i<num_clients; i++)); do
     link=$(generate_vless_link "$server_ip" "$i" "$json")
