@@ -60,7 +60,7 @@ in
   services = {
     openssh = {
       enable = true;
-      settings.PasswordAuthentication = false;
+      settings.PasswordAuthentication = true;
     };
     xray = {
       enable = true;
@@ -131,6 +131,7 @@ in
   };
   users.users = {
     root = {
+      initialPassword = "admin";
       openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/root_authorized_keys.txt;
     };
     xray = {
