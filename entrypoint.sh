@@ -35,8 +35,13 @@ fi
 echo $SSH_AUTH_SOCKET
 ssh-add -L
 
+ssh -i $HOME/.ssh/id_rsa \
+    -o StrictHostKeyChecking=accept-new \
+    root@$TARGET -v 'echo "--- REMOTE IS ACCESSIBLE ---"'
+
 nix run github:nix-community/nixos-anywhere -- --flake '.#nixos-anywhere-vm' \
     -i $HOME/.ssh/id_rsa \
+    --ssh-option StrictHostKeyChecking=accept-new \
     --option pure-eval false --print-build-logs \
     root@$TARGET
 
