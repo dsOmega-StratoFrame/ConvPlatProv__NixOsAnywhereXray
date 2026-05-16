@@ -20,6 +20,12 @@ if ! check_file "$DIRPATH/root_authorized_keys.txt" && ! check_file "$DIRPATH/au
     exit 1
 fi
 
+# TODO:
+echo "root authorized keys"
+cat "$DIRPATH/root_authorized_keys.txt"
+echo "authorized keys"
+cat "$DIRPATH/authorized_keys.txt"
+
 # Check for SSH private key
 if [ ! -f "$HOME/.ssh/id_rsa" ]; then
     echo "Error: SSH private key not found in $HOME/.ssh/"
@@ -32,7 +38,7 @@ if [ -z "${TARGET}" ]; then
     exit 1
 fi
 
-echo $SSH_AUTH_SOCKET
+echo $SSH_AUTH_SOCK
 ssh-add -L
 
 ssh -i $HOME/.ssh/id_rsa \
