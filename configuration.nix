@@ -44,13 +44,27 @@ in {
         9100
       ];
       allowedUDPPorts = [23];
-      extraCommands = ''
-        iptables -A INPUT -i eth0 -p tcp --dport 23 -j ACCEPT
-        iptables -A INPUT -i eth0 -p udp --dport 23 -j ACCEPT
-        iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
-        iptables -A INPUT -i eth0 -p tcp --dport 9100 -j ACCEPT
-      '';
+      # extraCommands = ''
+      #   iptables -A INPUT -i eth0 -p tcp --dport 23 -j ACCEPT
+      #   iptables -A INPUT -i eth0 -p udp --dport 23 -j ACCEPT
+      #   iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
+      #   iptables -A INPUT -i eth0 -p tcp --dport 9100 -j ACCEPT
+      # '';
     };
+    interfaces.ens3 = lib.mkIf (xrayConfig.network.gateway != "") {
+      useDHCP = false;
+      ipv4.addresses = [
+        {
+          inherit (xrayConfig.network) address;
+          inherit (xrayConfig.network) prefixLength;
+        }
+      ];
+    };
+    defaultGateway = lib.mkIf (xrayConfig.network.gateway != "") {
+      address = xrayConfig.network.gateway;
+      interface = "ens3";
+    };
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   # Set your time zone.
@@ -163,5 +177,6 @@ in {
       openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/authorized_keys.txt;
     };
   };
+  # Actual version is 26.05
   system.stateVersion = "24.06";
 }
