@@ -32,5 +32,12 @@ if [ -z "${TARGET}" ]; then
     exit 1
 fi
 
-nix run github:nix-community/nixos-anywhere -- --flake '.#nixos-anywhere-vm' -i $HOME/.ssh/id_rsa --option pure-eval false --print-build-logs root@$TARGET
+echo $SSH_AUTH_SOCKET
+ssh-add -L
+
+nix run github:nix-community/nixos-anywhere -- --flake '.#nixos-anywhere-vm' \
+    -i $HOME/.ssh/id_rsa \
+    --option pure-eval false --print-build-logs \
+    root@$TARGET
+
 echo "done. "
