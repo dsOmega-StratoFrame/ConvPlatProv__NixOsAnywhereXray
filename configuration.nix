@@ -145,5 +145,5 @@ in
       openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/authorized_keys.txt;
     };
   };
-  system.stateVersion = "24.6";
+  system.stateVersion = "24.06";
 }
