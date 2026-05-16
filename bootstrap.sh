@@ -138,7 +138,6 @@ docker run  --network host -e TARGET=$server_ip \
     -v $auth_keys_path:/etc/nixos-xray/authorized_keys.txt \
     -v $priv_key_path:/root/.ssh/id_rsa:ro \
     -v $(realpath $SSH_AUTH_SOCK):/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
-    --user "$(id -u):$(id -g)" \
     $image
 
 for ((i=0; i<num_clients; i++)); do
