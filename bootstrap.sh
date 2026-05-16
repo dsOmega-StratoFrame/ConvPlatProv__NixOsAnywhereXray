@@ -108,8 +108,8 @@ json=$(jq -n '{"loglevel": "info", "shadowsocks": {"password": $shadowsocks_pass
 --arg shadowsocks_password $(openssl rand -hex 32) \
 --arg domain $domain \
 --arg enable_nodeexporter $enable_nodeexporter \
---arg pubKey $(echo $key_pair | cut -d' ' -f6) \
---arg privKey $(echo $key_pair | cut -d' ' -f3) \
+--arg pubKey $(echo $key_pair | cut -d' ' -f5) \
+--arg privKey $(echo $key_pair | cut -d' ' -f2) \
 --arg sid $(openssl rand -hex 8))
 
 for ((i=0; i<num_clients; i++)); do
