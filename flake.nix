@@ -13,6 +13,7 @@
     };
 
     nixosModules = {
+      xray-disko = import ./diskio.nix;
       xray-options = import ./xray-options.nix;
       system-module = import ./system-module.nix;
       xray-module = import ./xray-module.nix;
