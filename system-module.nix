@@ -6,8 +6,10 @@
 in {
   imports = [
     ./xray-options.nix
-    # Needed even after initial depolyment.
+    # Needed even after initial depolyment and deploy-rs checks.
+    ./diskio.nix
     (modulesPath + "/profiles/qemu-guest.nix")
+    (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
   nixpkgs.config = {
