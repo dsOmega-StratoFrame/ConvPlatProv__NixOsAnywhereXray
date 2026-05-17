@@ -21,7 +21,7 @@
             content = {
               type = "filesystem";
               format = "vfat";
-              mountpoint = lib.mkForce "/boot";
+              mountpoint = "/boot";
             };
           };
           root = {
