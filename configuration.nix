@@ -5,13 +5,14 @@
   pkgs,
   ...
 }: let
-  xrayConfig = builtins.fromJSON (builtins.readFile /etc/nixos-xray/xray-config.json);
+  xrayConfig = builtins.fromJSON (builtins.readFile config.xray.configFile);
   readAuthorizedKeys = file: [(builtins.readFile file)];
 in {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
     ./diskio.nix
+    ./xray-options.nix
   ];
 
   # allow unfree packages to be installed
@@ -157,7 +158,7 @@ in {
   users.users = {
     root = {
       initialPassword = "admin";
-      openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/root_authorized_keys.txt;
+      openssh.authorizedKeys.keys = readAuthorizedKeys config.xray.rootAuthorizedKeysFile;
     };
     xray = {
       isNormalUser = true;
@@ -168,7 +169,7 @@ in {
         "wheel"
         # "docker" - if needed elsewhere
       ];
-      openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/authorized_keys.txt;
+      openssh.authorizedKeys.keys = readAuthorizedKeys config.xray.userAuthorizedKeysFile;
     };
   };
   # Actual version is 26.05
