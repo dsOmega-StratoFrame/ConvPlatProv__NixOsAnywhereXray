@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }: let
+{ config, lib, ... }: let
   # STYLE: A bit unclear naming, we store and use here settings not directly
   # related to xray.
   xrayConfig = builtins.fromJSON (builtins.readFile config.xray.configFile);
@@ -52,8 +52,6 @@ in {
 
   i18n.defaultLocale = "en_US.UTF-8";
 
-  programs.fish.enable = true;
-
   security.sudo.wheelNeedsPassword = false;
 
   services.openssh = {
@@ -70,7 +68,6 @@ in {
     };
     xray = {
       isNormalUser = true;
-      shell = pkgs.fish;
       description = "nixos-xray user";
       extraGroups = [
         "networkmanager"
