@@ -1,10 +1,14 @@
-{ config, lib, ... }: let
+{ modulesPath, config, lib, ... }: let
   # STYLE: A bit unclear naming, we store and use here settings not directly
   # related to xray.
   xrayConfig = builtins.fromJSON (builtins.readFile config.xray.configFile);
   readAuthorizedKeys = file: [(builtins.readFile file)];
 in {
-  imports = [ ./xray-options.nix ];
+  imports = [
+    ./xray-options.nix
+    # Needed even after initial depolyment.
+    (modulesPath + "/profiles/qemu-guest.nix")
+  ];
 
   nixpkgs.config = {
     allowUnfree = true;
