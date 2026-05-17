@@ -4,7 +4,7 @@
   disko.devices = {
     disk.disk1 = {
       # sometimes this can be /dev/sda or indeed some other device 
-      device = lib.mkDefault "/dev/sda";
+      device = lib.mkDefault "/dev/vda";
       type = "disk";
       content = {
         type = "gpt";
@@ -21,7 +21,7 @@
             content = {
               type = "filesystem";
               format = "vfat";
-              mountpoint = lib.mkDefault "/boot";
+              mountpoint = lib.mkForce "/boot";
             };
           };
           root = {
