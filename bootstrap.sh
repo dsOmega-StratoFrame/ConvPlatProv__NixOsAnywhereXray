@@ -33,6 +33,7 @@ print_usage_and_exit() {
     echo ""
     echo "Optional parameters:"
     echo "[-c|--clients <number> / default: 2]"
+    echo "[-g|--gateway <ip> / default: '']"
     echo "[-d|--domain <domain> / default: www.microsoft.com]"
     echo "[-e|--enable-nodeexporter <true/false> / default: false]"
     echo "[-r|--root-auth-keys <path> / default: same as --auth-keys]"
@@ -65,6 +66,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -s|--server-ip)
             server_ip="$2"
+            shift 2
+            ;;
+        -g|--gateway)
+            gateway="$2"
             shift 2
             ;;
         -a|--auth-keys)
@@ -104,12 +109,19 @@ image="nixos-xray:local"
 docker buildx build -t $image .
 echo "Built local docker image: $image"
 
-json=$(jq -n '{"loglevel": "info", "shadowsocks": {"password": $shadowsocks_password}, "vless": {"domain": $domain, "publicKey": $pubKey, "privateKey": $privKey, "shortId": $sid}, "enable_nodeexporter": ($enable_nodeexporter | test("true")) }' \
+json=$(jq -n '{"loglevel": "info",
+"shadowsocks": {"password": $shadowsocks_password},
+"vless": {"domain": $domain, "publicKey": $pubKey, "privateKey": $privKey, "shortId": $sid},
+"enable_nodeexporter": ($enable_nodeexporter | test("true")),
+"network": {"address": $address, "prefixLength": 24, "gateway": $gateway}
+}' \
 --arg shadowsocks_password $(openssl rand -hex 32) \
 --arg domain $domain \
 --arg enable_nodeexporter $enable_nodeexporter \
---arg pubKey $(echo $key_pair | cut -d' ' -f6) \
---arg privKey $(echo $key_pair | cut -d' ' -f3) \
+--arg address $server_ip \
+--arg gateway $gateway \
+--arg pubKey $(echo $key_pair | cut -d' ' -f5) \
+--arg privKey $(echo $key_pair | cut -d' ' -f2) \
 --arg sid $(openssl rand -hex 8))
 
 for ((i=0; i<num_clients; i++)); do
@@ -132,7 +144,13 @@ echo "Configuration file generated: config.json"
 
 echo "Running deployment... "
 
-docker run  --network host -e TARGET=$server_ip -v ./config.json:/etc/nixos-xray/xray-config.json -v $root_auth_keys_path:/etc/nixos-xray/root_authorized_keys.txt -v $auth_keys_path:/etc/nixos-xray/authorized_keys.txt -v $priv_key_path:/root/.ssh/id_rsa:ro $image
+docker run  --network host -e TARGET=$server_ip \
+    -v ./config.json:/etc/nixos-xray/xray-config.json \
+    -v $root_auth_keys_path:/etc/nixos-xray/root_authorized_keys.txt \
+    -v $auth_keys_path:/etc/nixos-xray/authorized_keys.txt \
+    -v $priv_key_path:/root/.ssh/id_rsa:ro \
+    -v $(realpath $SSH_AUTH_SOCK):/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
+    $image
 
 for ((i=0; i<num_clients; i++)); do
     link=$(generate_vless_link "$server_ip" "$i" "$json")

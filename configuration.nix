@@ -1,10 +1,13 @@
-{ modulesPath, config, lib, pkgs, ... }: 
-
-let
-  xrayConfig = builtins.fromJSON (builtins.readFile /etc/nixos-xray/xray-config.json);
-  readAuthorizedKeys = file: [ (builtins.readFile file) ];
-in
 {
+  modulesPath,
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  xrayConfig = builtins.fromJSON (builtins.readFile /etc/nixos-xray/xray-config.json);
+  readAuthorizedKeys = file: [(builtins.readFile file)];
+in {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
@@ -16,28 +19,46 @@ in
     allowUnfree = true;
   };
 
-  boot.loader.grub = {
-    # no need to set devices, disko will add all devices that have a EF02 partition to the list already
-    # devices = [ ];
-    efiSupport = true;
-    efiInstallAsRemovable = true;
+  boot = {
+    loader.grub = {
+      # no need to set devices, disko will add all devices that have a EF02 partition to the list already
+      # devices = [ ];
+      enable = true;
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+    };
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   networking = {
     hostName = "nixos-xray";
     firewall = {
       enable = true;
-      allowedTCPPorts = [ 23 443 9100 ];
-      allowedUDPPorts = [ 23 ];
-      extraCommands = ''
-        iptables -A INPUT -i eth0 -p tcp --dport 23 -j ACCEPT
-        iptables -A INPUT -i eth0 -p udp --dport 23 -j ACCEPT
-        iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
-        iptables -A INPUT -i eth0 -p tcp --dport 9100 -j ACCEPT
-      '';
+      allowedTCPPorts = [
+        23
+        443
+        9100
+      ];
+      allowedUDPPorts = [23];
     };
+    interfaces.ens3 = lib.mkIf (xrayConfig.network.gateway != "") {
+      useDHCP = false;
+      ipv4.addresses = [
+        {
+          inherit (xrayConfig.network) address;
+          inherit (xrayConfig.network) prefixLength;
+        }
+      ];
+    };
+    defaultGateway = lib.mkIf (xrayConfig.network.gateway != "") {
+      address = xrayConfig.network.gateway;
+      interface = "ens3";
+    };
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
   # Set your time zone.
@@ -60,7 +81,7 @@ in
   services = {
     openssh = {
       enable = true;
-      settings.PasswordAuthentication = false;
+      settings.PasswordAuthentication = true;
     };
     xray = {
       enable = true;
@@ -91,6 +112,7 @@ in
             tag = "vless_tls";
             settings = {
               clients = xrayConfig.vless.clients;
+              # Mandatory for REALITY; VLESS traffic is not encrypted by VLESS itself (the encryption is handled entirely by TLS/REALITY).
               decryption = "none";
             };
             streamSettings = {
@@ -110,7 +132,10 @@ in
             };
             sniffing = {
               enabled = true;
-              destOverride = ["http" "tls"];
+              destOverride = [
+                "http"
+                "tls"
+              ];
             };
           }
         ];
@@ -131,19 +156,21 @@ in
   };
   users.users = {
     root = {
+      initialPassword = "admin";
       openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/root_authorized_keys.txt;
     };
     xray = {
-      isNormalUser = true; 
-      shell = pkgs.fish; 
-      description = "nixos-xray user"; 
-      extraGroups = [ 
-        "networkmanager" 
-        "wheel" 
+      isNormalUser = true;
+      shell = pkgs.fish;
+      description = "nixos-xray user";
+      extraGroups = [
+        "networkmanager"
+        "wheel"
         # "docker" - if needed elsewhere
-      ]; 
+      ];
       openssh.authorizedKeys.keys = readAuthorizedKeys /etc/nixos-xray/authorized_keys.txt;
     };
   };
-  system.stateVersion = "24.6";
+  # Actual version is 26.05
+  system.stateVersion = "24.06";
 }

@@ -27,6 +27,7 @@ Required parameters:
 
 Optional parameters:
 [-c|--clients <number> / default: 2]
+[-g|--gateway <ip> / default: '']
 [-d|--domain <domain> / default: www.microsoft.com]
 [-e|--enable-nodeexporter <true/false> / default: false]
 [-r|--root-auth-keys <path> / default: same as --auth-keys]
@@ -38,6 +39,7 @@ Provide the required params & run the script, it will perform several actions:
 - Prepare the `config.json`
 - Build a nix docker container
 - Run nixos-anywhere deployment to remote host over the configurations inside docker container
+- Configure default gateway inside nixos, if the `gateway` is provided.
 - Output vless:// connection links
 
 Typical run command:

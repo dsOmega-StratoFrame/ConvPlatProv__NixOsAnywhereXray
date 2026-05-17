@@ -20,6 +20,12 @@ if ! check_file "$DIRPATH/root_authorized_keys.txt" && ! check_file "$DIRPATH/au
     exit 1
 fi
 
+# TODO:
+echo "root authorized keys"
+cat "$DIRPATH/root_authorized_keys.txt"
+echo "authorized keys"
+cat "$DIRPATH/authorized_keys.txt"
+
 # Check for SSH private key
 if [ ! -f "$HOME/.ssh/id_rsa" ]; then
     echo "Error: SSH private key not found in $HOME/.ssh/"
@@ -32,5 +38,17 @@ if [ -z "${TARGET}" ]; then
     exit 1
 fi
 
-nix run github:nix-community/nixos-anywhere -- --flake '.#nixos-anywhere-vm' --option pure-eval false --print-build-logs root@$TARGET
+echo $SSH_AUTH_SOCK
+ssh-add -L
+
+ssh -i $HOME/.ssh/id_rsa \
+    -o StrictHostKeyChecking=accept-new \
+    root@$TARGET -v 'echo "--- REMOTE IS ACCESSIBLE ---"'
+
+nix run github:nix-community/nixos-anywhere -- --flake '.#nixos-anywhere-vm' \
+    -i $HOME/.ssh/id_rsa \
+    --ssh-option StrictHostKeyChecking=accept-new \
+    --option pure-eval false --print-build-logs \
+    root@$TARGET
+
 echo "done. "
