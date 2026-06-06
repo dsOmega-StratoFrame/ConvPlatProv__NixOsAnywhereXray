@@ -17,6 +17,7 @@
     };
 
     nixosModules = {
+      # For deploy-rs, NixOS only needs the **result** of the disk setup (what's mounted where, where GRUB installs), not the **process** of creating it. That's exactly:
       xray-disko = {
         fileSystems."/" = {
           device = "/dev/pool/root";
