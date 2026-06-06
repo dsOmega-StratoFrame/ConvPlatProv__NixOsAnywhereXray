@@ -34,6 +34,7 @@ in {
       allowedTCPPorts = [
         23
         443
+        8443
         9100
       ];
       allowedUDPPorts = [23];

@@ -9,7 +9,7 @@ in {
     enable = true;
     settings = {
       log = {
-        loglevel = xrayConfig.loglevel;
+        inherit (xrayConfig) loglevel;
       };
 
       routing = {
@@ -24,16 +24,16 @@ in {
           protocol = "shadowsocks";
           settings = {
             method = "2022-blake3-aes-128-gcm";
-            password = xrayConfig.shadowsocks.password;
+            inherit (xrayConfig.shadowsocks) password;
             network = "tcp,udp";
           };
         }
         {
-          port = 443;
+          port = 8443;
           protocol = "vless";
           tag = "vless_tls";
           settings = {
-            clients = xrayConfig.vless.clients;
+            inherit (xrayConfig.vless) clients;
             # Mandatory for REALITY; VLESS traffic is not encrypted by VLESS
             # intself (the necryption is handled entirely by TLS/REALITY).
             decryption = "none";
@@ -46,7 +46,7 @@ in {
               dest = xrayConfig.vless.domain + ":443";
               xver = 0;
               serverNames = [xrayConfig.vless.domain];
-              privateKey = xrayConfig.vless.privateKey;
+              inherit (xrayConfig.vless) privateKey;
               minClientVer = "";
               maxClientVer = "";
               maxTimeDiff = 0;
